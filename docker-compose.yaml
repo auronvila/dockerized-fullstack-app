@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: 'mongo'
+    container_name: mongodb
+    volumes:
+      - data:/data/db:ro
+    #    environment:
+    #      MONGODB_USERNAME: asdasd
+    #      MONGODB_PASSWORD: asdasd
+    env_file:
+      - './docker.env'
+  backend:
+    build: './backend'
+    container_name: goals-backend
+    #    build:
+    #      context: './backend'
+    #      dockerfile: 'Dockerfile'
+    ports:
+      - '8080:8080'
+    volumes:
+      - logs:/app/logs
+      #     this is a bind mount where it shares the backend folder with the app folder inside the container
+      - ./backend:/app
+      #      this is an annonymus volume
+      - /app/node_modules
+    env_file:
+      - './docker.env'
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: './frontend'
+    container_name: goals-frontend
+    volumes:
+      - ./frontend/src:/app/src
+    ports:
+      - '3000:3000'
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+volumes:
+  data:
+  logs:
